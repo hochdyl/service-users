@@ -15,7 +15,9 @@ services:
 
   # PHP service
   users:
-    build: ./users
+    build:
+      context: ./users
+      dockerfile: Dockerfile
     container_name: service-users
     working_dir: /var/www/html
     volumes:
