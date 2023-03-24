@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Docker environment
+        uses: docker/setup-docker@v1
+
+      - name: Build and run Docker container
+        run: |
+          docker-compose build
+          docker-compose up -d
+
+      - name: Wait for Symfony to be ready
+        run: |
+          until curl --silent --fail http://localhost:8000/_healthcheck; do
+            echo 'Waiting for Symfony to be ready...'
+            sleep 1
+          done
+
+      - name: Run PHPUnit tests
+        run: docker-compose exec php bin/phpunit
+
+      - name: Stop Docker container
+        run: docker-compose down
