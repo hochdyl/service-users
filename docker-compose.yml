@@ -1,0 +1,51 @@
+version: "3.8"
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: php-nginx
+    volumes:
+      - ./users:/var/www/html
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+    ports:
+      - "80:80"
+    depends_on:
+      - users
+    networks:
+      - app-network
+
+  # PHP service
+  users:
+    build: ./users
+    container_name: service-users
+    working_dir: /var/www/html
+    volumes:
+      - ./users:/var/www/html
+    networks:
+      - app-network
+
+  db:
+    image: mysql:5.7
+    container_name: mysql-db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: users
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+    networks:
+      - app-network
+#
+  phpmyadmin:
+    image: phpmyadmin
+    ports:
+      - "8080:80"
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=db
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
